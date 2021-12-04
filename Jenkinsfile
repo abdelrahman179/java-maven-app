@@ -26,7 +26,6 @@ pipeline {
          gv.buildImage()
         }
       }
-     }
     }
     stage("deploy") {
      steps {
