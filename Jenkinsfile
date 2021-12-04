@@ -85,7 +85,7 @@ pipeline {
             input {
                message "Select the environment to deply to "
                ok "Done"
-               parameteres {
+               parameters {
                  choice(name:'ENV', choices:['dev', 'staging', 'production'], description:'')
                }
             }
