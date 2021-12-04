@@ -85,14 +85,17 @@ pipeline {
             input {
                message "Select the environment to deply to "
                ok "Done"
+               // parameters here are scoped inside the stage 
                parameters {
-                 choice(name:'ENV', choices:['dev', 'staging', 'production'], description:'')
+                 choice(name:'ENV_ONE', choices:['dev', 'staging', 'production'], description:'')
+                 choice(name:'ENV_TWO', choices:['dev', 'staging', 'production'], description:'')
                }
             }
             steps {
                 echo 'deploying the app'
                 echo "deploying version ${params.VERSION}"
-                echo "deploying to  ${ENV}"
+                echo "deploying to  ${ENV_ONE}"
+                echo "deploying to  ${ENV_TWO}"
                 /* it takes the username and password and store into the defined vars below */
                 /*
                 withCredentials([
