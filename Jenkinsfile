@@ -1,122 +1,36 @@
-// groovy script check if there are changes in the git repo 
-// CODE_CHANGES = getGitChanges()
-
-/*
- --- To list all the environmental variables provided by Jenkins: localhost:8080/env-vars.html
-
- --- We can define credentials through env variables 
-    SERVER_CREDENTIALS = credentials('')
-    - it requires credentials bunding plugin
-    - it takes the id of the credentials as a parameter
-*/
-
-
 pipeline {
-    // create env var to be avail throughout the script
-     /* environment {
-        NEW_VERSION = '1.3.0'
-    }*/ 
-    
-    agent any 
-    
-    
-    // provides me with build tools such as MAVEN, npm   
-    /* tools {
-        gradle
-        maven 'Maven' // name of the tool inside the configuration
-        jdk
-    }*/
-    
-    // define the selection of external config that we want to provide to build to change behavior 
-    /*  - we have to use build with parameters 
-        - 
-    */
-    parameters {
-    // 
-    // string(name:'VERSION', defaultValue:'', description:'version to deploy')
-    choice(name:'VERSION', choices:['1.1.0', '1.2.0'], description:'')
-    booleanParam(name:'executeTest', defaultValue:true, description:'')
+   agent any
+   tools {
+      maven 'maven-3.8.4'
+   }
+   stages {
+    stage("build jar") {
+     steps {
+      script {
+        echo "Building the application..."
+        sh 'mvn package'
+      }
+     }
     }
-    
-    stages {
-        
-        stage ("build") {
-            // the steps will be executed if only the condition below is true, branch name is dev and there are changes occured
-            /* when {
-                expression {
-                    BRANCH_NAME == 'dev' | CODE_CHANGES == true
-                }    
-            } */
-            
-            
-            steps {
-                  /*
-                    to write normal groovy script
-                  */   
-             
-                echo 'building the app'
-                /*
-                    calling env variable in single quotes wont work, 
-                    to be interpreted as a var to be called, it has to be in a double quotes
-                */
-                // echo "building version ${NEW_VERSION}"
-            }
+    stage("build image") {
+     steps {
+      script {
+        echo "Building the docker image...."
+        withCredentials([usernamePassword(credentialsId: 'Docker_Hub', passwordVariable: 'PASS', usernameVariable: 'USER')]){
+         // extract the username and password, execute docker commands
+         sh 'docker build -t abdelrahmanzaki179/demo-app:jma-3.0 .'
+         sh "echo $PASS | docker login -u $USER --password-stdin"
+         sh 'docker push abdelrahmanzaki179/demo-app:jma-3.0'
         }
-        
-        stage ("test") {
-            // the steps will be executed if only the condition below is true, branch name is dev
-            /* when {
-                expression {
-                    BRANCH_NAME == 'dev' | BRANCH_NAME == 'master'
-                }    
-            } */
-            when {
-                expression {
-                    params.executeTests == true
-                }
-            }
-            
-            steps {
-                echo 'testing the app'
-            }
-        }
-        
-        stage ("deploy") {
-            input {
-               message "Select the environment to deply to "
-               ok "Done"
-               // parameters here are scoped inside the stage 
-               parameters {
-                 choice(name:'ENV_ONE', choices:['dev', 'staging', 'production'], description:'')
-                 choice(name:'ENV_TWO', choices:['dev', 'staging', 'production'], description:'')
-               }
-            }
-            steps {
-                echo 'deploying the app'
-                echo "deploying version ${params.VERSION}"
-                echo "deploying to  ${ENV_ONE}"
-                echo "deploying to  ${ENV_TWO}"
-                /* it takes the username and password and store into the defined vars below */
-                /*
-                withCredentials([
-                    usernamePassword(credentials: 'GitHub', usernameVariable: USER, passwordVariable: PASSWORD)
-                ]) {
-                    sh "some script ${USER} ${PASSWORD}"
-                }
-                */
-            }
-        }
+      }
+     }
     }
-    // define build status | build status change
-    /* post {
-        // this script, logic will be executed after all changes no matter failure, success
-        always {   
-        }
-        // execued only on the success 
-        sucess {
-        }
-        // executed only on failure
-        failure {
-        }
-    } */
+    stage("deploy") {
+     steps {
+      script {
+        echo "Deploying the application..."
+      }
+     }
+    }
+ }
 }
