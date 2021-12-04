@@ -41,7 +41,6 @@ pipeline {
     stages {
         
         stage ("build") {
-            
             // the steps will be executed if only the condition below is true, branch name is dev and there are changes occured
             /* when {
                 expression {
@@ -51,6 +50,10 @@ pipeline {
             
             
             steps {
+                  /*
+                    to write normal groovy script
+                  */   
+             
                 echo 'building the app'
                 /*
                     calling env variable in single quotes wont work, 
